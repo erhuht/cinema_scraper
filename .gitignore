@@ -1,0 +1,4 @@
+__pycache__/
+spiders/__pycache__/
+/cinema.jsonl
+/src.txt
