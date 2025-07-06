@@ -1,5 +1,4 @@
 import scrapy
-import json
 
 
 class KinotSpider(scrapy.Spider):
@@ -10,5 +9,5 @@ class KinotSpider(scrapy.Spider):
 
 
     def parse(self, response):
-        for movie in json.loads(response.text):
+        for movie in response.json():
             yield {"title": movie["movie_title"], "src": "kinot"}
