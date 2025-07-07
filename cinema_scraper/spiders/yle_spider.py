@@ -14,7 +14,21 @@ class Yle(scrapy.Spider):
     }
 
     def parse(self, response):
-        yield scrapy.Request(url=response.json()["data"][0]["url"]["full"], callback=self.parse_article)
+        response_list = response.json()["data"]
+        url = ""
+        season = 0
+        for article in response_list:
+            if article["headline"] == time.strftime("Teeman kevään %Y elokuvat") and season == 0:
+                url = article["url"]["full"]
+                season = 1
+            elif article["headline"] == time.strftime("Teeman kesän %Y elokuvat") and season <= 1:
+                url = article["url"]["full"]
+                season = 2
+            elif article["headline"] == time.strftime("Teeman syksyn %Y elokuvat") and season <= 2:
+                url = article["url"]["full"]
+                season = 3
+
+        yield scrapy.Request(url=url, callback=self.parse_article)
 
     def parse_article(self, response):
         for movie in response.css("h2.ydd-heading-large"):
