@@ -1,4 +1,5 @@
 __pycache__/
 spiders/__pycache__/
+spiders/finnkino_spider.py
 /cinema.jsonl
 /src.txt
