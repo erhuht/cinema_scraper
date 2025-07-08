@@ -1,5 +1,6 @@
 import scrapy
 import config
+import re
 
 
 class MovieDatabaseSpider(scrapy.Spider):
@@ -9,6 +10,7 @@ class MovieDatabaseSpider(scrapy.Spider):
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super().from_crawler(crawler, *args, **kwargs)
         spider.settings.set("DOWNLOAD_DELAY", 0, priority="spider")
+        spider.settings.set("ROBOTSTXT_OBEY", False, priority="spider")
         if "path" in kwargs:
             spider.settings.set(
                 "FEEDS", {"-db.".join(kwargs["path"].split(".")): {"format": "jsonlines"}}, priority="spider"
@@ -16,18 +18,64 @@ class MovieDatabaseSpider(scrapy.Spider):
         return spider
 
     async def start(self):
-        self.count = 0
-        # Limit the number of API requests
-        # for movie in self.movies:
-        for i in range(20):
-            movie = self.movies[i]
-            if movie.get("year"):
-                yield scrapy.Request(url=f"http://www.omdbapi.com/?apikey={config.omdb_key}={movie["title"]}&y={movie["year"]}", callback=self.parse)
-            else:
-                yield scrapy.Request(url=f"http://www.omdbapi.com/?apikey={config.omdb_key}={movie["title"]}", callback=self.parse)
+        for movie in self.movies:
+            # Try finding the movie without a prefix and colon or without parentheses
+            possible_titles = [movie["title"]]
+            if movie["title"].split(":")[-1] not in possible_titles:
+                possible_titles.append(movie["title"].split(":")[-1].strip())
 
-    def parse(self, response):
+            for title in possible_titles:
+                if "(" in title and ")" in title:
+                    title_no_paren = re.sub(r"\s*\([^)]*\)", "", title).strip()
+                    if title_no_paren and title_no_paren not in possible_titles:
+                        possible_titles.append(title_no_paren)
+
+            possible_movies = []
+            if movie.get("year"):
+                for title in possible_titles:
+                    possible_movies.append(
+                        {"title": title, "year": movie["year"], "src": movie["src"], "og_title": movie["title"]})
+                    possible_movies.append(
+                        {"title": title, "src": movie["src"], "og_title": movie["title"]})
+
+                next_movie = possible_movies.pop(0)
+                url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}&y={next_movie["year"]}"
+                yield scrapy.Request(url=url, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+            else:
+                for title in possible_titles:
+                    possible_movies.append(
+                        {"title": title, "src": movie["src"], "og_title": movie["title"]})
+
+                next_movie = possible_movies.pop(0)
+                url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
+                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+
+    def parse_omdb(self, response, movie={}, possible_movies=[]):
         if response.json().get("Response") == "True":
-            self.count += 1
-            self.logger.info(f"Found {self.count}/{len(self.movies)}")
-            yield {"title": response.json().get("Title"), "id": response.json().get("imdbID"), "src": "movie_database"}
+            yield {"title": response.json().get("Title"), "og_title": movie["og_title"], "id": response.json().get("imdbID"), "src": movie["src"], "id_src": "omdb"}
+        else:
+            if movie.get("year"):
+                url = f"https://www.imdb.com/find/?q={movie["title"]} {movie["year"]}&s=tt&exact=true"
+                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_imdb, cb_kwargs={"movie": movie, "possible_movies": possible_movies})
+            else:
+                url = f"https://www.imdb.com/find/?q={movie["title"]}&s=tt&exact=true"
+                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_imdb, cb_kwargs={"movie": movie, "possible_movies": possible_movies})
+
+    def parse_imdb(self, response, movie={}, possible_movies=[]):
+        if response.css("a.ipc-metadata-list-summary-item__t"):
+            title = response.css(
+                "a.ipc-metadata-list-summary-item__t::text").get()
+            imdb_id = response.css(
+                "a.ipc-metadata-list-summary-item__t::attr(href)").get().split("/")[2]
+            yield {"title": title, "og_title": movie["og_title"], "id": imdb_id, "src": movie["src"], "id_src": "imdb"}
+        else:
+            if len(possible_movies) > 0:
+                next_movie = possible_movies.pop(0)
+                if next_movie.get("year"):
+                    url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}&y={next_movie["year"]}"
+                    yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+                else:
+                    url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
+                    yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+            else:
+                yield {"title": movie["og_title"], "src": movie["src"], "id": "", "id_src": "not_found"}
