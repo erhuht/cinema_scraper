@@ -9,4 +9,4 @@ class ReginaSpider(scrapy.Spider):
 
     def parse(self, response):
         for movie in response.css("div.movie.pr.col-12.shows-coming"):
-            yield {"title": movie.css("a.title::text").get(), "src": "regina"}
+            yield {"title": movie.css("a.title::text").get().title(), "src": "regina"}
