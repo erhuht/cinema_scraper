@@ -1,17 +1,39 @@
-from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
+from scrapy.utils.reactor import install_reactor
+import jsonlines
 from pathlib import Path
+from datetime import datetime
+import config
 
+install_reactor("twisted.internet.asyncioreactor.AsyncioSelectorReactor")
+
+user = config.letterboxd_user
 settings = get_project_settings()
-log_path = Path("logs") / "%(time)s.jsonl"
+log_path = Path("logs") / datetime.now().strftime("%Y%m%d-%H%M%S.jsonl")
 settings.set("FEEDS", {str(log_path): {"format": "jsonlines"}})
 
-process = CrawlerProcess(settings)
+configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
+runner = CrawlerRunner(settings)
 
-process.crawl("kinot")
-process.crawl("biorex")
-process.crawl("regina")
-process.crawl("yle")
-process.crawl("watchlist")
-process.crawl("likes")
-process.start()
+from twisted.internet import reactor, defer  # nopep8
+
+
+@defer.inlineCallbacks
+def crawl():
+    yield runner.crawl("kinot")
+    yield runner.crawl("biorex")
+    yield runner.crawl("regina")
+    yield runner.crawl("yle")
+    yield runner.crawl("watchlist", user=user)
+    yield runner.crawl("likes", user=user)
+
+    with jsonlines.open(log_path) as reader:
+        yield runner.crawl("movie_database", movies=list(reader), path=str(log_path))
+
+    reactor.stop()
+
+
+crawl()
+reactor.run()

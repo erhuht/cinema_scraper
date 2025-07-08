@@ -4,3 +4,4 @@ spiders/__pycache__/
 logs/
 *.jsonl
 /src.txt
+/config.py
