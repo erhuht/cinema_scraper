@@ -1,6 +1,7 @@
 import scrapy
 import time
 from pathlib import Path
+import re
 
 
 class Yle(scrapy.Spider):
@@ -31,5 +32,17 @@ class Yle(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.parse_article)
 
     def parse_article(self, response):
-        for movie in response.css("h2.ydd-heading-large"):
-            yield {"title": movie.css("h2::text").get(), "src": "yle"}
+        movies = response.css("div.ydd-body-content").xpath("*")
+        for i in range(len(movies)):
+            if movies[i].css("h2.ydd-heading-large"):
+                try:
+                    text = movies[i+1].css("p::text").get()
+                except IndexError:
+                    text = ""
+                years = re.findall(
+                    r"(\b19\d{2}\b|\b20\d{2}\b)[^-]", text or "")
+                if years:
+                    year = years[-1]
+                else:
+                    year = 0
+                yield {"title": movies[i].css("h2::text").get(), "year": year, "src": "yle"}
