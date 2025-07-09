@@ -43,16 +43,13 @@ class MovieDatabaseSpider(scrapy.Spider):
                         possible_titles.append(title_no_paren)
 
             possible_movies = []
-            if movie.get("year"):
-                for title in possible_titles:
+
+            for title in possible_titles:
+                possible_movies.append(
+                    {"title": title, "info": movie["info"], "og_title": movie["title"]})
+                if movie.get("year"):
                     possible_movies.append(
                         {"title": title, "year": movie["year"], "info": movie["info"], "og_title": movie["title"]})
-                    possible_movies.append(
-                        {"title": title, "info": movie["info"], "og_title": movie["title"]})
-            else:
-                for title in possible_titles:
-                    possible_movies.append(
-                        {"title": title, "info": movie["info"], "og_title": movie["title"]})
 
             next_movie = possible_movies.pop(0)
             url = self.generate_omdb_url(next_movie)
