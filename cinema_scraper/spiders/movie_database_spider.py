@@ -17,6 +17,18 @@ class MovieDatabaseSpider(scrapy.Spider):
             )
         return spider
 
+    def generate_omdb_url(self, movie):
+        if movie.get("year"):
+            return f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={movie["title"]}&y={movie["year"]}"
+        else:
+            return f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={movie["title"]}"
+
+    def generate_imdb_url(self, movie):
+        if movie.get("year"):
+            return f"https://www.imdb.com/find/?q={movie["title"]} {movie["year"]}&s=tt&exact=true"
+        else:
+            return f"https://www.imdb.com/find/?q={movie["title"]}&s=tt&exact=true"
+
     async def start(self):
         for movie in self.movies:
             # Try finding the movie without a prefix and colon or without parentheses
@@ -37,29 +49,21 @@ class MovieDatabaseSpider(scrapy.Spider):
                         {"title": title, "year": movie["year"], "info": movie["info"], "og_title": movie["title"]})
                     possible_movies.append(
                         {"title": title, "info": movie["info"], "og_title": movie["title"]})
-
-                next_movie = possible_movies.pop(0)
-                url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}&y={next_movie["year"]}"
-                yield scrapy.Request(url=url, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
             else:
                 for title in possible_titles:
                     possible_movies.append(
                         {"title": title, "info": movie["info"], "og_title": movie["title"]})
 
-                next_movie = possible_movies.pop(0)
-                url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
-                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+            next_movie = possible_movies.pop(0)
+            url = self.generate_omdb_url(next_movie)
+            yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
 
     def parse_omdb(self, response, movie={}, possible_movies=[]):
         if response.json().get("Response") == "True":
             yield {"title": response.json().get("Title"), "og_title": movie["og_title"], "id": response.json().get("imdbID"), "info": movie["info"], "id_src": "omdb"}
         else:
-            if movie.get("year"):
-                url = f"https://www.imdb.com/find/?q={movie["title"]} {movie["year"]}&s=tt&exact=true"
-                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_imdb, cb_kwargs={"movie": movie, "possible_movies": possible_movies})
-            else:
-                url = f"https://www.imdb.com/find/?q={movie["title"]}&s=tt&exact=true"
-                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_imdb, cb_kwargs={"movie": movie, "possible_movies": possible_movies})
+            url = self.generate_imdb_url(movie)
+            yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_imdb, cb_kwargs={"movie": movie, "possible_movies": possible_movies})
 
     def parse_imdb(self, response, movie={}, possible_movies=[]):
         if response.css("a.ipc-metadata-list-summary-item__t"):
@@ -71,11 +75,7 @@ class MovieDatabaseSpider(scrapy.Spider):
         else:
             if len(possible_movies) > 0:
                 next_movie = possible_movies.pop(0)
-                if next_movie.get("year"):
-                    url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}&y={next_movie["year"]}"
-                    yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
-                else:
-                    url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
-                    yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+                url = self.generate_omdb_url(next_movie)
+                yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
             else:
                 yield {"title": movie["og_title"], "info": movie["info"], "id": "", "id_src": "not_found"}
