@@ -30,5 +30,5 @@ class BioRexSpider(scrapy.Spider):
         for movie in response.css("div.movie-card__main"):
             url = movie.css("a.movie-card__poster-link::attr(href)").get() + \
                 "?cinema_id=13&f_cinemas=all#alt-theaters"
-            info = {"url": url, "src": "biorex"}
+            info = {"human_url": url, "url": url, "src": "biorex"}
             yield {"title": movie.css("h3::text").get(), "info": info}

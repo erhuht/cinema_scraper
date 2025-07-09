@@ -50,4 +50,4 @@ class Yle(scrapy.Spider):
                     date = movies[i+2].css("strong::text").get()
                 except IndexError:
                     date = ""
-                yield {"title": title, "year": year, "info": {"url": response.url, "src": "yle", "date": date}}
+                yield {"title": title, "year": year, "info": {"human_url": response.url, "url": response.url, "src": "yle", "date": date}}

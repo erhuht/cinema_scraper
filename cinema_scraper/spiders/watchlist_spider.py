@@ -12,7 +12,7 @@ class WatchlistSpider(scrapy.Spider):
             # alt is not ideal
             url = "https://letterboxd.com/" + \
                 movie.css("div.poster::attr(data-target-link)").get()
-            yield {"title": movie.css("img::attr(alt)").get(), "info": {"url": url, "src": "watchlist"}}
+            yield {"title": movie.css("img::attr(alt)").get(), "info": {"human_url": url, "url": url, "src": "watchlist"}}
 
         next_page = response.css("a.next::attr(href)").get()
         if next_page is not None:

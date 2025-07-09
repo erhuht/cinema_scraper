@@ -10,5 +10,5 @@ class ReginaSpider(scrapy.Spider):
     def parse(self, response):
         for movie in response.css("div.movie.pr.col-12.shows-coming"):
             url = movie.css("a.title::attr(href)").get()
-            info = {"url": url, "src": "regina"}
+            info = {"human_url": url, "url": url, "src": "regina"}
             yield {"title": movie.css("a.title::text").get().title(), "info": info}

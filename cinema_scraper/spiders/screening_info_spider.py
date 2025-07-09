@@ -40,4 +40,4 @@ class ScreeningInfoSpider(scrapy.Spider):
             theater = list({show["theater_title"]
                            for date, shows in response.json().items() for show in shows})
 
-        yield {"title": movie["og_title"], "date": date, "theater": theater, "info": movie["info"], "id_src": movie["id_src"]}
+        yield {"og_title": movie["og_title"], "title": movie["title"], "date": date, "theater": theater, "info": movie["info"], "id_src": movie["id_src"]}
