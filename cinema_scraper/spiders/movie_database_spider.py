@@ -34,9 +34,9 @@ class MovieDatabaseSpider(scrapy.Spider):
             if movie.get("year"):
                 for title in possible_titles:
                     possible_movies.append(
-                        {"title": title, "year": movie["year"], "src": movie["src"], "og_title": movie["title"]})
+                        {"title": title, "year": movie["year"], "info": movie["info"], "og_title": movie["title"]})
                     possible_movies.append(
-                        {"title": title, "src": movie["src"], "og_title": movie["title"]})
+                        {"title": title, "info": movie["info"], "og_title": movie["title"]})
 
                 next_movie = possible_movies.pop(0)
                 url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}&y={next_movie["year"]}"
@@ -44,7 +44,7 @@ class MovieDatabaseSpider(scrapy.Spider):
             else:
                 for title in possible_titles:
                     possible_movies.append(
-                        {"title": title, "src": movie["src"], "og_title": movie["title"]})
+                        {"title": title, "info": movie["info"], "og_title": movie["title"]})
 
                 next_movie = possible_movies.pop(0)
                 url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
@@ -52,7 +52,7 @@ class MovieDatabaseSpider(scrapy.Spider):
 
     def parse_omdb(self, response, movie={}, possible_movies=[]):
         if response.json().get("Response") == "True":
-            yield {"title": response.json().get("Title"), "og_title": movie["og_title"], "id": response.json().get("imdbID"), "src": movie["src"], "id_src": "omdb"}
+            yield {"title": response.json().get("Title"), "og_title": movie["og_title"], "id": response.json().get("imdbID"), "info": movie["info"], "id_src": "omdb"}
         else:
             if movie.get("year"):
                 url = f"https://www.imdb.com/find/?q={movie["title"]} {movie["year"]}&s=tt&exact=true"
@@ -67,7 +67,7 @@ class MovieDatabaseSpider(scrapy.Spider):
                 "a.ipc-metadata-list-summary-item__t::text").get()
             imdb_id = response.css(
                 "a.ipc-metadata-list-summary-item__t::attr(href)").get().split("/")[2]
-            yield {"title": title, "og_title": movie["og_title"], "id": imdb_id, "src": movie["src"], "id_src": "imdb"}
+            yield {"title": title, "og_title": movie["og_title"], "id": imdb_id, "info": movie["info"], "id_src": "imdb"}
         else:
             if len(possible_movies) > 0:
                 next_movie = possible_movies.pop(0)
@@ -78,4 +78,4 @@ class MovieDatabaseSpider(scrapy.Spider):
                     url = f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={next_movie["title"]}"
                     yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
             else:
-                yield {"title": movie["og_title"], "src": movie["src"], "id": "", "id_src": "not_found"}
+                yield {"title": movie["og_title"], "info": movie["info"], "id": "", "id_src": "not_found"}

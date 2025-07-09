@@ -32,6 +32,24 @@ def crawl():
     with jsonlines.open(log_path) as reader:
         yield runner.crawl("movie_database", movies=list(reader), path=str(log_path))
 
+    with jsonlines.open("-db.".join(str(log_path).split("."))) as reader:
+        movie_list = list(reader)
+
+    watchlist = [m["id"] for m in movie_list if m["id"]
+                 and (m["info"]["src"] in ["watchlist", "likes"])]
+    screening_list = [m for m in movie_list if m["id"]
+                      and (m["info"]["src"] not in ["watchlist", "likes"])]
+
+    matching_movies = []
+    for movie in screening_list:
+        if movie["id"] in watchlist:
+            matching_movies.append(movie)
+
+    print("Crawling info for:")
+    print(matching_movies)
+
+    yield runner.crawl("screening_info", movies=matching_movies, path=str(log_path))
+
     reactor.stop()
 
 

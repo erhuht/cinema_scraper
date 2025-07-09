@@ -24,8 +24,11 @@ class BioRexSpider(scrapy.Spider):
             callback=self.parse
         )
 
-
     def parse(self, response):
-        response = response.replace(body=response.json()["posts"].encode("utf-8"))
-        for movie in response.css("div.movie-card__title"):
-            yield {"title": movie.css("h3::text").get(), "src": "biorex"}
+        response = response.replace(
+            body=response.json()["posts"].encode("utf-8"))
+        for movie in response.css("div.movie-card__main"):
+            url = movie.css("a.movie-card__poster-link::attr(href)").get() + \
+                "?cinema_id=13&f_cinemas=all#alt-theaters"
+            info = {"url": url, "src": "biorex"}
+            yield {"title": movie.css("h3::text").get(), "info": info}

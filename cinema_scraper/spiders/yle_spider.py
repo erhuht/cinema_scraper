@@ -45,4 +45,9 @@ class Yle(scrapy.Spider):
                     year = years[-1]
                 else:
                     year = 0
-                yield {"title": movies[i].css("h2::text").get(), "year": year, "src": "yle"}
+                title = movies[i].css("h2::text").get()
+                try:
+                    date = movies[i+2].css("strong::text").get()
+                except IndexError:
+                    date = ""
+                yield {"title": title, "year": year, "info": {"url": response.url, "src": "yle", "date": date}}

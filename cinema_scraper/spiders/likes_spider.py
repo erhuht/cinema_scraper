@@ -10,7 +10,9 @@ class LikesSpider(scrapy.Spider):
     def parse(self, response):
         for movie in response.css("li.poster-container"):
             # alt is not ideal
-            yield {"title": movie.css("img::attr(alt)").get(), "src": "likes"}
+            url = "https://letterboxd.com/" + \
+                movie.css("div.poster::attr(data-target-link)").get()
+            yield {"title": movie.css("img::attr(alt)").get(), "info": {"url": url, "src": "watchlist"}}
 
         next_page = response.css("a.next::attr(href)").get()
         if next_page is not None:

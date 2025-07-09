@@ -10,4 +10,6 @@ class KinotSpider(scrapy.Spider):
 
     def parse(self, response):
         for movie in response.json():
-            yield {"title": unescape(movie["movie_title"]), "src": "kinot"}
+            url = "https://www.kinot.fi/wp-json/kinot-movies/v1/shows?movie_slug=" + \
+                movie["movie_slug"]
+            yield {"title": unescape(movie["movie_title"]), "info": {"url": url, "src": "kinot"}}
