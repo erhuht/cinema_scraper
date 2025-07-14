@@ -17,6 +17,14 @@ class MovieDatabaseSpider(scrapy.Spider):
             )
         return spider
 
+    async def start(self):
+        for movie in self.movies:
+            possible_movies = self.generate_possible_movies(movie)
+
+            next_movie = possible_movies.pop(0)
+            url = self.generate_omdb_url(next_movie)
+            yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+
     def generate_omdb_url(self, movie):
         if movie.get("year"):
             return f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={movie["title"]}&y={movie["year"]}"
@@ -29,31 +37,28 @@ class MovieDatabaseSpider(scrapy.Spider):
         else:
             return f"https://www.imdb.com/find/?q={movie["title"]}&s=tt&exact=true"
 
-    async def start(self):
-        for movie in self.movies:
-            # Try finding the movie without a prefix and colon or without parentheses
-            possible_titles = [movie["title"]]
-            if movie["title"].split(":")[-1] not in possible_titles:
-                possible_titles.append(movie["title"].split(":")[-1].strip())
+    def generate_possible_movies(self, movie):
+        # Try finding the movie without a prefix and colon or without parentheses
+        possible_titles = [movie["title"]]
+        if movie["title"].split(":")[-1] not in possible_titles:
+            possible_titles.append(movie["title"].split(":")[-1].strip())
 
-            for title in possible_titles:
-                if "(" in title and ")" in title:
-                    title_no_paren = re.sub(r"\s*\([^)]*\)", "", title).strip()
-                    if title_no_paren and title_no_paren not in possible_titles:
-                        possible_titles.append(title_no_paren)
+        for title in possible_titles:
+            if "(" in title and ")" in title:
+                title_no_paren = re.sub(r"\s*\([^)]*\)", "", title).strip()
+                if title_no_paren and title_no_paren not in possible_titles:
+                    possible_titles.append(title_no_paren)
 
-            possible_movies = []
+        possible_movies = []
 
-            for title in possible_titles:
+        for title in possible_titles:
+            possible_movies.append(
+                {"title": title, "info": movie["info"], "og_title": movie["title"]})
+            if movie.get("year"):
                 possible_movies.append(
-                    {"title": title, "info": movie["info"], "og_title": movie["title"]})
-                if movie.get("year"):
-                    possible_movies.append(
-                        {"title": title, "year": movie["year"], "info": movie["info"], "og_title": movie["title"]})
+                    {"title": title, "year": movie["year"], "info": movie["info"], "og_title": movie["title"]})
 
-            next_movie = possible_movies.pop(0)
-            url = self.generate_omdb_url(next_movie)
-            yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_omdb, cb_kwargs={"movie": next_movie, "possible_movies": possible_movies})
+        return possible_movies
 
     def parse_omdb(self, response, movie={}, possible_movies=[]):
         if response.json().get("Response") == "True":
