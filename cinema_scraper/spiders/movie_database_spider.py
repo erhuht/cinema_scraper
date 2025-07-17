@@ -19,6 +19,10 @@ class MovieDatabaseSpider(scrapy.Spider):
 
     async def start(self):
         for movie in self.movies:
+            if movie.get("id"):
+                yield {"title": movie["title"], "og_title": movie["title"], "id": movie["id"], "info": movie["info"], "id_src": "letterboxd"}
+                continue
+
             possible_movies = self.generate_possible_movies(movie)
 
             next_movie = possible_movies.pop(0)

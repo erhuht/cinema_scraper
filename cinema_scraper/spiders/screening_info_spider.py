@@ -24,20 +24,20 @@ class ScreeningInfoSpider(scrapy.Spider):
         if src == "biorex":
             dates = response.css(
                 "div.movie-showtimes-list__day::text").getall()
-            date = dates[0]
+            date = [dates[0]]
             if len(dates) > 1 and "Today" in dates[0]:
-                date = "Running now"
+                date = ["Running now"]
             theater = "BioRex Tripla/Redi"
         elif src == "regina":
             date = response.css(
                 "div.title-container span.title::text").getall()
             theater = "Kino Regina"
         elif src == "yle":
-            date = movie["info"]["date"]
+            date = [movie["info"]["date"]]
             theater = "Yle Areena"
         elif src == "kinot":
             date = list(response.json().keys())
             theater = list({show["theater_title"]
                            for date, shows in response.json().items() for show in shows})
 
-        yield {"og_title": movie["og_title"], "title": movie["title"], "date": date, "theater": theater, "info": movie["info"], "id_src": movie["id_src"]}
+        yield {"og_title": movie["og_title"], "title": movie["title"], "date": date, "theater": theater, "info": movie["info"], "letterboxd_info": movie["letterboxd_info"], "id_src": movie["id_src"]}

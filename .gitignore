@@ -5,3 +5,4 @@ logs/
 *.jsonl
 /src.txt
 /config.py
+/newsletter/output/
