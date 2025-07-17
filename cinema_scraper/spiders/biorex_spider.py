@@ -8,7 +8,7 @@ class BioRexSpider(scrapy.Spider):
         yield scrapy.Request(url="https://biorex.fi/en/movies/?cinema_id=13", callback=self.fetch_movies)
 
     def fetch_movies(self, response):
-        url = "https://biorex.fi/wp-admin/admin-ajax.php?lang=en&f_cinemas=all"
+        url = "https://biorex.fi/wp-admin/admin-ajax.php?lang=fi&f_cinemas=all"
         yield scrapy.FormRequest(
             url=url,
             formdata={
