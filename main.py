@@ -6,7 +6,7 @@ import jsonlines
 from pathlib import Path
 from datetime import datetime
 import config
-from newsletter import populate_html
+from newsletter.newsletter import populate_html
 
 install_reactor("twisted.internet.asyncioreactor.AsyncioSelectorReactor")
 
