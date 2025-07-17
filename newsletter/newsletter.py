@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 
 def populate_html(movies):
-    with open('template.html', encoding="utf-8") as template:
+    with open(Path(__file__).parent / 'template.html', encoding="utf-8") as template:
         soup = BeautifulSoup(template.read(), "html.parser")
 
     movie_template = soup.find('div', attrs={'class': 'movie'})

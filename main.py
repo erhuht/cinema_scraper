@@ -12,8 +12,8 @@ install_reactor("twisted.internet.asyncioreactor.AsyncioSelectorReactor")
 
 user = config.letterboxd_user
 settings = get_project_settings()
-date = datetime.now().strftime("%Y%m%d-%H%M%S.jsonl")
-log_path = Path("logs") / date
+date = datetime.now().strftime("%Y%m%d-%H%M%S")
+log_path = Path("logs") / (date + ".jsonl")
 settings.set("FEEDS", {str(log_path): {"format": "jsonlines"}})
 
 configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
@@ -64,5 +64,5 @@ with jsonlines.open("-info.".join(str(log_path).split("."))) as reader:
     info_list = list(reader)
 
 output = populate_html(info_list)
-with open(Path("newsletter/output") / date, "w", encoding="utf-8") as f:
+with open(Path("newsletter/output") / (date + ".html"), "w", encoding="utf-8") as f:
     f.write(output)
