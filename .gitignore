@@ -6,3 +6,4 @@ logs/
 /src.txt
 /config.py
 /newsletter/output/
+.prettierignore

@@ -13,7 +13,7 @@ def populate_html(movies):
 
     movie_entries = []
     for movie in movies:
-        movie_template.find("p", class_="title").string.replace_with(
+        movie_template.find("h2").string.replace_with(
             movie["og_title"])
 
         # Remove the br elements from the previous iteration
@@ -21,20 +21,21 @@ def populate_html(movies):
             t.extract()
         movie_template.a.smooth()
 
-        for t in movie_template.find("p", class_="dates").findChildren():
+        for t in movie_template.find("p", attrs={"css-class": "dates"}).findChildren():
             t.extract()
-        movie_template.find("p", class_="dates").smooth()
+        movie_template.find("p", attrs={"css-class": "dates"}).smooth()
 
         movie_template.find("em").string.replace_with(
             movie["letterboxd_info"]["director"])
 
         # Weird, because of different formats
         dates = ", ".join(movie["date"]).split(", ")
-        movie_template.find("p", class_="dates").string.replace_with(
+        movie_template.find("p", attrs={"css-class": "dates"}).string.replace_with(
             dates[0].title())
         for date in dates[1:]:
-            movie_template.find("p", class_="dates").append(soup.new_tag("br"))
-            movie_template.find("p", class_="dates").append(
+            movie_template.find(
+                "p", attrs={"css-class": "dates"}).append(soup.new_tag("br"))
+            movie_template.find("p", attrs={"css-class": "dates"}).append(
                 soup.new_string(date.title()))
 
         if type(movie["theater"]) == list:
