@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from pathlib import Path
+import re
 
 
 def populate_html(movies):
@@ -49,6 +50,8 @@ def populate_html(movies):
             movie_template.a.string.replace_with(theater_name)
 
         movie_template.a["href"] = movie["info"]["human_url"]
+        movie_template.find("a", string=re.compile("Letterboxd"))[
+            "href"] = movie["letterboxd_info"]["url"]
 
         movie_template.img["src"] = movie["letterboxd_info"]["poster"]
         movie_template.img["alt"] = movie["title"]
