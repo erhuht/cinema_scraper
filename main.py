@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 import config
 from newsletter.newsletter import populate_html
+from newsletter.send_email import send_email
 
 install_reactor("twisted.internet.asyncioreactor.AsyncioSelectorReactor")
 
@@ -66,3 +67,9 @@ with jsonlines.open("-info.".join(str(log_path).split("."))) as reader:
 output = populate_html(info_list)
 with open(Path("newsletter/output") / (date + ".html"), "w", encoding="utf-8") as f:
     f.write(output)
+
+print("Created email HTML: " + str(Path("newsletter/output") / (date + ".html")))
+
+subject = "Helsingin elokuvauutiskirje"
+send_email(subject, output, config.sender_email, [
+           config.recipient_email], config.sender_password)
