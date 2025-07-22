@@ -25,8 +25,8 @@ class ScreeningInfoSpider(scrapy.Spider):
             dates = response.css(
                 "div.movie-showtimes-list__day::text").getall()
             date = [dates[0]]
-            if len(dates) > 1 and "Today" in dates[0]:
-                date = ["Running now"]
+            if len(dates) > 1 and "Tänään" in dates[0]:
+                date = ["Jatkuvasti"]
             theater = "BioRex Tripla/Redi"
         elif src == "regina":
             date = response.css(
