@@ -20,7 +20,7 @@ jobs:
       - name: Cache Scrapy HTTP cache
         uses: actions/cache@v4
         with:
-          path: .scrapy/HTTPCache
+          path: .scrapy/httpcache
           key: scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-
