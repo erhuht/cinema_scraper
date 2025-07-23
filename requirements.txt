@@ -1,3 +1,4 @@
 scrapy
 jsonlines
 beautifulsoup4
+dotenv
