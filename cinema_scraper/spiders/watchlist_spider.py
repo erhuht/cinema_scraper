@@ -10,7 +10,6 @@ class WatchlistSpider(scrapy.Spider):
 
     def parse(self, response):
         for movie in response.css("li.poster-container"):
-            # alt is not ideal
             url = "https://letterboxd.com" + \
                 movie.css("div.poster::attr(data-target-link)").get()
             # id = movie.css("div.poster::attr(data-film-id)").get()
@@ -23,11 +22,19 @@ class WatchlistSpider(scrapy.Spider):
 
     def parse_movie(self, response):
         title = response.css("h1.primaryname span::text").get()
-        id = response.xpath(
-            "//a[@data-track-action='IMDb']/@href").get().split("/")[-2]
         data = response.xpath(
             "//script[@type='application/ld+json']/text()").get()
         poster = json.loads(data.strip().split("\n")[1])["image"].split("?")[
             0].replace("230-0-345", "2000-0-3000")
         director = response.css("a.contributor span::text").get()
-        yield {"title": title, "id": id, "info": {"human_url": response.url, "url": response.url, "poster": poster, "director": director, "src": "watchlist"}}
+        info = {"human_url": response.url, "url": response.url,
+                "poster": poster, "director": director, "src": "watchlist"}
+        output = {"title": title, "info": info}
+        try:
+            id = response.xpath(
+                "//a[@data-track-action='IMDb']/@href").get().split("/")[-2]
+            output["id"] = id
+        except AttributeError:
+            pass
+
+        yield output

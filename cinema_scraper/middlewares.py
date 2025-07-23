@@ -4,6 +4,14 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+# from typing import TYPE_CHECKING
+
+from scrapy.http import Response
+from scrapy.utils.httpobj import urlparse_cached
+
+# if TYPE_CHECKING:
+from scrapy.http.request import Request
+from scrapy.settings import BaseSettings
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
@@ -98,3 +106,38 @@ class CinemaScraperDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class MoviePolicy:
+    def __init__(self, settings: BaseSettings):
+        self.ignore_schemes: list[str] = settings.getlist(
+            "HTTPCACHE_IGNORE_SCHEMES")
+        self.ignore_http_codes: list[int] = [
+            int(x) for x in settings.getlist("HTTPCACHE_IGNORE_HTTP_CODES")
+        ]
+
+    def should_cache_request(self, request: Request) -> bool:
+        if urlparse_cached(request).scheme in self.ignore_schemes:
+            return False
+        elif urlparse_cached(request).netloc in ["www.omdbapi.com", "www.imdb.com"]:
+            return True
+        else:
+            return urlparse_cached(request).netloc == "letterboxd.com" and "film" in urlparse_cached(request).path
+
+    def should_cache_response(self, response: Response, request: Request) -> bool:
+        if response.status in self.ignore_http_codes:
+            return False
+        elif urlparse_cached(request).netloc in ["www.omdbapi.com", "www.imdb.com"]:
+            return True
+        else:
+            return urlparse_cached(request).netloc == "letterboxd.com" and "film" in urlparse_cached(request).path
+
+    def is_cached_response_fresh(
+        self, cachedresponse: Response, request: Request
+    ) -> bool:
+        return True
+
+    def is_cached_response_valid(
+        self, cachedresponse: Response, response: Response, request: Request
+    ) -> bool:
+        return True
