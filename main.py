@@ -5,13 +5,18 @@ from scrapy.utils.reactor import install_reactor
 import jsonlines
 from pathlib import Path
 from datetime import datetime
-import config
+from dotenv import load_dotenv
+import os
 from newsletter.newsletter import populate_html
 from newsletter.send_email import send_email
 
 install_reactor("twisted.internet.asyncioreactor.AsyncioSelectorReactor")
 
-user = config.letterboxd_user
+load_dotenv()
+user = os.getenv("LETTERBOXD_USER")
+if not user:
+    raise ValueError("Missing LETTERBOXD_USER environment variable")
+
 settings = get_project_settings()
 date = datetime.now().strftime("%Y%m%d-%H%M%S")
 log_path = Path("logs") / (date + ".jsonl")
@@ -71,5 +76,8 @@ with open(Path("newsletter/output") / (date + ".html"), "w", encoding="utf-8") a
 print("Created email HTML: " + str(Path("newsletter/output") / (date + ".html")))
 
 subject = "Helsingin elokuvauutiskirje"
-send_email(subject, output, config.sender_email, [
-           config.recipient_email], config.sender_password)
+sender = os.getenv("SENDER_EMAIL")
+recipient = os.getenv("RECIPIENT_EMAIL")
+password = os.getenv("SENDER_PASSWORD")
+send_email(subject, output, sender, [
+           recipient], password)

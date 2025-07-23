@@ -1,5 +1,6 @@
 import scrapy
-import config
+from dotenv import load_dotenv
+import os
 import re
 
 
@@ -18,6 +19,12 @@ class MovieDatabaseSpider(scrapy.Spider):
         return spider
 
     async def start(self):
+        load_dotenv()
+        self.omdb_key = os.getenv("OMDB_KEY")
+
+        if not self.omdb_key:
+            raise ValueError("Missing OMDB_KEY environment variable")
+
         for movie in self.movies:
             if movie.get("id"):
                 yield {"title": movie["title"], "og_title": movie["title"], "id": movie["id"], "info": movie["info"], "id_src": "letterboxd"}
@@ -31,9 +38,9 @@ class MovieDatabaseSpider(scrapy.Spider):
 
     def generate_omdb_url(self, movie):
         if movie.get("year"):
-            return f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={movie["title"]}&y={movie["year"]}"
+            return f"http://www.omdbapi.com/?apikey={self.omdb_key}&t={movie["title"]}&y={movie["year"]}"
         else:
-            return f"http://www.omdbapi.com/?apikey={config.omdb_key}&t={movie["title"]}"
+            return f"http://www.omdbapi.com/?apikey={self.omdb_key}&t={movie["title"]}"
 
     def generate_imdb_url(self, movie):
         if movie.get("year"):
