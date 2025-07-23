@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .scrapy/httpcache
-          key: scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-${{ github.run_id }}
+          key: scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-${{ github.run_number }}
           restore-keys: |
             scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-
             scrapy-cache-${{ github.workflow }}-
