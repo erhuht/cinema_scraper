@@ -70,7 +70,10 @@ with jsonlines.open("-info.".join(str(log_path).split("."))) as reader:
     info_list = list(reader)
 
 output = populate_html(info_list)
-with open(Path("newsletter/output") / (date + ".html"), "w", encoding="utf-8") as f:
+
+output_path = Path("newsletter/output") / (date + ".html")
+output_path.mkdir(parents=True, exist_ok=True)
+with open(output_path, "w", encoding="utf-8") as f:
     f.write(output)
 
 print("Created email HTML: " + str(Path("newsletter/output") / (date + ".html")))
