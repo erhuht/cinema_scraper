@@ -2,7 +2,7 @@ name: Monthly Crawl
 
 on:
   schedule:
-    - cron: '0 8 1 * *'  # Runs on the 1st of each month at 08:00 UTC
+    - cron: "0 8 1 * *" # Runs on the 1st of each month at 08:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -12,10 +12,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-      - run: |
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Cache Scrapy HTTP cache
+        uses: actions/cache@v4
+        with:
+          path: .scrapy/HTTPCache
+          key: scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            scrapy-cache-${{ github.workflow }}-${{ github.ref_name }}-
+            scrapy-cache-${{ github.workflow }}-
       - run: python main.py
         env:
           OMDB_KEY: ${{ secrets.OMDB_KEY }}
