@@ -71,12 +71,12 @@ with jsonlines.open("-info.".join(str(log_path).split("."))) as reader:
 
 output = populate_html(info_list)
 
-output_path = Path("newsletter/output") / (date + ".html")
+output_path = Path("newsletter/output")
 output_path.mkdir(parents=True, exist_ok=True)
-with open(output_path, "w", encoding="utf-8") as f:
+with open(output_path / (date + ".html"), "w", encoding="utf-8") as f:
     f.write(output)
 
-print("Created email HTML: " + str(Path("newsletter/output") / (date + ".html")))
+print("Created email HTML: " + str(output_path / (date + ".html")))
 
 subject = "Helsingin elokuvauutiskirje"
 sender = os.getenv("SENDER_EMAIL")
