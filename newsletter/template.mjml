@@ -9,14 +9,12 @@
     <!-- Company Header -->
     <mj-section>
       <mj-column>
-        <mj-text align="center" font-weight="bolder" font-size="30px">
-          Helsingin elokuvauutiskirje
-        </mj-text>
+        <mj-text align="center" font-weight="bolder" font-size="30px"> TITLE </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="20px 0px 0px 0px">
       <mj-column>
-        <mj-text align="left" font-weight="500" font-size="22px"> Watchlist ja tykätyt: </mj-text>
+        <mj-text align="left" font-weight="bold" font-size="22px"> Watchlist ja tykätyt: </mj-text>
       </mj-column></mj-section
     >
     <mj-section padding="20px 20px 0px 10px">

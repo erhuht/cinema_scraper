@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from pathlib import Path
 import re
+from datetime import datetime
 
 
 def populate_html(movies):
@@ -11,6 +12,9 @@ def populate_html(movies):
     html_start = str(soup)[:str(soup).find(str(movie_template))]
     html_end = str(soup)[str(soup).find(
         str(movie_template))+len(str(movie_template)):]
+
+    title = datetime.now().strftime("Helsingin elokuvauutiskirje %m/%y")
+    html_start = html_start.replace("TITLE", title)
 
     movie_entries = []
     for movie in movies:
@@ -57,4 +61,4 @@ def populate_html(movies):
         movie_template.img["alt"] = movie["title"]
         movie_entries.append(str(movie_template))
 
-    return html_start + "\n".join(movie_entries) + html_end
+    return title, html_start + "\n".join(movie_entries) + html_end

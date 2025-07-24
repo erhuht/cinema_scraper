@@ -69,7 +69,7 @@ reactor.run()
 with jsonlines.open("-info.".join(str(log_path).split("."))) as reader:
     info_list = list(reader)
 
-output = populate_html(info_list)
+subject, output = populate_html(info_list)
 
 output_path = Path("newsletter/output")
 output_path.mkdir(parents=True, exist_ok=True)
@@ -78,7 +78,6 @@ with open(output_path / (date + ".html"), "w", encoding="utf-8") as f:
 
 print("Created email HTML: " + str(output_path / (date + ".html")))
 
-subject = "Helsingin elokuvauutiskirje"
 sender = os.getenv("SENDER_EMAIL")
 recipient = os.getenv("RECIPIENT_EMAIL")
 password = os.getenv("SENDER_PASSWORD")
