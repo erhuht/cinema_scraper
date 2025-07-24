@@ -3,21 +3,24 @@ from pathlib import Path
 import re
 from datetime import datetime
 import copy
+from mjml import mjml_to_html
 
 
 def populate_html(movies):
-    with open(Path(__file__).parent / 'template.html', encoding="utf-8") as template:
+    with open(Path(__file__).parent / 'template.mjml', encoding="utf-8") as template:
         soup = BeautifulSoup(template.read(), "html.parser")
 
-    subtitle_section = soup.find('div', attrs={'class': 'subtitle-section'})
-    movie_section = soup.find('div', attrs={'class': 'movie-section'})
-    movie_template = soup.find('div', attrs={'class': 'movie'})
-    html_start = str(soup)[:str(soup).find(str(subtitle_section))]
-    html_end = str(soup)[str(soup).find(
+    subtitle_section = soup.find(
+        'mj-section', attrs={'css-class': 'subtitle-section'})
+    movie_section = soup.find(
+        'mj-section', attrs={'css-class': 'movie-section'})
+    movie_template = soup.find('mj-column', attrs={'css-class': 'movie'})
+    mjml_start = str(soup)[:str(soup).find(str(subtitle_section))]
+    mjml_end = str(soup)[str(soup).find(
         str(movie_section))+len(str(movie_section)):]
 
     title = datetime.now().strftime("Helsingin elokuvauutiskirje %m/%y")
-    html_start = html_start.replace("TITLE", title)
+    mjml_start = mjml_start.replace("TITLE", title)
 
     section_dict = {"Watchlist": [], "Tykätyt": []}
 
@@ -71,10 +74,11 @@ def populate_html(movies):
             movie_copy.img["src"] = movie["letterboxd_info"]["poster"]
             movie_copy.img["alt"] = movie["title"]
             movie_entries.append(movie_copy)
-        movie_section_copy.find('div', attrs={'class': 'movie'}).replace_with(
+        movie_section_copy.find("mj-column", attrs={"css-class": "movie"}).replace_with(
             *movie_entries)
         section_entries.append(str(subtitle_section).replace("SUBTITLE", section["name"]) +
                                "\n" + str(movie_section_copy))
 
-    html = html_start + "\n".join(section_entries) + html_end
-    return title, html
+    mjml_output = mjml_start + "\n".join(section_entries) + mjml_end
+    html_output = mjml_to_html(mjml_output).html
+    return title, html_output
