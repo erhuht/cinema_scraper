@@ -17,48 +17,62 @@ def populate_html(movies):
     html_start = html_start.replace("TITLE", title)
 
     movie_entries = []
+    section_dict = {"Watchlist": [], "Tykätyt": []}
+
     for movie in movies:
-        movie_template.find("h2").string.replace_with(
-            movie["og_title"])
-
-        # Remove the br elements from the previous iteration
-        for t in movie_template.a.findChildren():
-            t.extract()
-        movie_template.a.smooth()
-
-        for t in movie_template.find("p", attrs={"css-class": "dates"}).findChildren():
-            t.extract()
-        movie_template.find("p", attrs={"css-class": "dates"}).smooth()
-
-        movie_template.find("em").string.replace_with(
-            movie["letterboxd_info"]["director"])
-
-        # Weird, because of different formats
-        dates = ", ".join(movie["date"]).split(", ")
-        movie_template.find("p", attrs={"css-class": "dates"}).string.replace_with(
-            dates[0].title())
-        for date in dates[1:]:
-            movie_template.find(
-                "p", attrs={"css-class": "dates"}).append(soup.new_tag("br"))
-            movie_template.find("p", attrs={"css-class": "dates"}).append(
-                soup.new_string(date.title()))
-
-        if type(movie["theater"]) == list:
-            theater_name = movie["theater"][0]
-            movie_template.a.string.replace_with(theater_name)
-            for theater in movie["theater"][1:]:
-                movie_template.a.append(soup.new_tag("br"))
-                movie_template.a.append(soup.new_string(theater))
+        if section_dict.get(movie["letterboxd_info"]["section"]):
+            section_dict[movie["letterboxd_info"]["section"]].append(movie)
         else:
-            theater_name = movie["theater"]
-            movie_template.a.string.replace_with(theater_name)
+            section_dict[movie["letterboxd_info"]["section"]] = [movie]
 
-        movie_template.a["href"] = movie["info"]["human_url"]
-        movie_template.find("a", string=re.compile("Letterboxd"))[
-            "href"] = movie["letterboxd_info"]["url"]
+    # Make sure watchlist goes first
+    sections = [{"name": "Watchlist", "movies": section_dict.pop(
+        "Watchlist")}, {"name": "Tykätyt", "movies": section_dict.pop("Tykätyt")}]
+    sections += [{"name": key, "movies": value}
+                 for key, value in section_dict.items()]
+    for section in sections:
+        for movie in section["movies"]:
+            movie_template.find("h2").string.replace_with(
+                movie["og_title"])
 
-        movie_template.img["src"] = movie["letterboxd_info"]["poster"]
-        movie_template.img["alt"] = movie["title"]
-        movie_entries.append(str(movie_template))
+            # Remove the br elements from the previous iteration
+            for t in movie_template.a.findChildren():
+                t.extract()
+            movie_template.a.smooth()
+
+            for t in movie_template.find("p", attrs={"css-class": "dates"}).findChildren():
+                t.extract()
+            movie_template.find("p", attrs={"css-class": "dates"}).smooth()
+
+            movie_template.find("em").string.replace_with(
+                movie["letterboxd_info"]["director"])
+
+            # Weird, because of different formats
+            dates = ", ".join(movie["date"]).split(", ")
+            movie_template.find("p", attrs={"css-class": "dates"}).string.replace_with(
+                dates[0].title())
+            for date in dates[1:]:
+                movie_template.find(
+                    "p", attrs={"css-class": "dates"}).append(soup.new_tag("br"))
+                movie_template.find("p", attrs={"css-class": "dates"}).append(
+                    soup.new_string(date.title()))
+
+            if type(movie["theater"]) == list:
+                theater_name = movie["theater"][0]
+                movie_template.a.string.replace_with(theater_name)
+                for theater in movie["theater"][1:]:
+                    movie_template.a.append(soup.new_tag("br"))
+                    movie_template.a.append(soup.new_string(theater))
+            else:
+                theater_name = movie["theater"]
+                movie_template.a.string.replace_with(theater_name)
+
+            movie_template.a["href"] = movie["info"]["human_url"]
+            movie_template.find("a", string=re.compile("Letterboxd"))[
+                "href"] = movie["letterboxd_info"]["url"]
+
+            movie_template.img["src"] = movie["letterboxd_info"]["poster"]
+            movie_template.img["alt"] = movie["title"]
+            movie_entries.append(str(movie_template))
 
     return title, html_start + "\n".join(movie_entries) + html_end
