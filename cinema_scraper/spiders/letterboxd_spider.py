@@ -1,14 +1,20 @@
 import scrapy
 import json
 from dotenv import load_dotenv
+import os
+import json
 
 
 class Letterboxd(scrapy.Spider):
     name = "letterboxd"
 
     async def start(self):
+        load_dotenv()
+        custom_lists = json.loads(os.getenv("CUSTOM_LISTS"))
+
         sections = [{"name": "Watchlist", "url": f"https://letterboxd.com/{self.user}/watchlist/page/1/"},
                     {"name": "Tykätyt", "url": f"https://letterboxd.com/{self.user}/likes/films/page/1/"}]
+        sections += custom_lists
         for section in sections:
             yield scrapy.Request(url=section["url"], callback=self.parse, cb_kwargs={"section": section["name"]})
 
@@ -16,7 +22,7 @@ class Letterboxd(scrapy.Spider):
         for movie in response.css("li.poster-container"):
             url = "https://letterboxd.com" + \
                 movie.css("div.poster::attr(data-target-link)").get()
-            yield scrapy.Request(url=url, callback=self.parse_movie, cb_kwargs={"section": section})
+            yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_movie, cb_kwargs={"section": section})
 
         next_page = response.css("a.next::attr(href)").get()
         if next_page is not None:
