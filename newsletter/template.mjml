@@ -12,12 +12,12 @@
         <mj-text align="center" font-weight="bolder" font-size="30px"> TITLE </mj-text>
       </mj-column>
     </mj-section>
-    <mj-section padding="20px 0px 0px 0px">
+    <mj-section css-class="subtitle-section" padding="40px 0px 0px 0px">
       <mj-column>
-        <mj-text align="left" font-weight="bold" font-size="22px"> Watchlist ja tykätyt: </mj-text>
+        <mj-text align="left" font-weight="bold" font-size="22px"> SUBTITLE: </mj-text>
       </mj-column></mj-section
     >
-    <mj-section padding="20px 20px 0px 10px">
+    <mj-section css-class="movie-section" padding="20px 20px 0px 10px">
       <mj-column width="380px" css-class="movie">
         <mj-table>
           <tr>
