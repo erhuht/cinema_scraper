@@ -17,7 +17,7 @@ class ScreeningInfoSpider(scrapy.Spider):
 
     async def start(self):
         for movie in self.movies:
-            yield scrapy.Request(url=movie["info"]["url"], callback=self.parse, cb_kwargs={"movie": movie})
+            yield scrapy.Request(url=movie["info"]["url"], dont_filter=True, callback=self.parse, cb_kwargs={"movie": movie})
 
     def parse(self, response, movie=None):
         src = movie["info"]["src"]

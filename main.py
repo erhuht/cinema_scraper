@@ -34,8 +34,7 @@ def crawl():
     yield runner.crawl("biorex")
     yield runner.crawl("regina")
     yield runner.crawl("yle")
-    yield runner.crawl("watchlist", user=user)
-    yield runner.crawl("likes", user=user)
+    yield runner.crawl("letterboxd", user=user)
 
     with jsonlines.open(log_path) as reader:
         yield runner.crawl("movie_database", movies=list(reader), path=str(log_path))
@@ -43,17 +42,18 @@ def crawl():
     with jsonlines.open("-db.".join(str(log_path).split("."))) as reader:
         movie_list = list(reader)
 
-    watchlist = {m["id"]: m for m in movie_list if m["id"]
-                 and m["info"]["src"] in ["watchlist", "likes"]}
+    watchlist = [m for m in movie_list if m["id"]
+                 and m["info"]["src"] == "letterboxd"]
     screening_list = [m for m in movie_list if m["id"]
-                      and m["info"]["src"] not in ["watchlist", "likes"]]
+                      and m["info"]["src"] != "letterboxd"]
 
     matching_movies = []
     for movie in screening_list:
-        if movie["id"] in watchlist.keys():
-            movie["letterboxd_info"] = watchlist[movie["id"]
-                                                 ]["info"]
-            matching_movies.append(movie)
+        if movie["id"] in [m["id"] for m in watchlist]:
+            matches = [m for m in watchlist if m["id"] == movie["id"]]
+            for match in matches:
+                movie["letterboxd_info"] = match["info"]
+                matching_movies.append(movie.copy())
 
     print("Crawling info for:")
     print(matching_movies)
