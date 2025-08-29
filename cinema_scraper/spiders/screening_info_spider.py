@@ -32,6 +32,9 @@ class ScreeningInfoSpider(scrapy.Spider):
             date = response.css(
                 "div.title-container span.title::text").getall()
             theater = "Kino Regina"
+        elif src == "sheryl":
+            date = response.css("div.kinola-film-screening p::text").getall()
+            theater = "Cinema Sheryl"
         elif src == "yle":
             date = [movie["info"]["date"]]
             theater = "Yle Areena"

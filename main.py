@@ -33,6 +33,7 @@ def crawl():
     yield runner.crawl("kinot")
     yield runner.crawl("biorex")
     yield runner.crawl("regina")
+    yield runner.crawl("sheryl")
     yield runner.crawl("yle")
     yield runner.crawl("letterboxd", user=user)
 
