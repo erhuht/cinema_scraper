@@ -1,4 +1,5 @@
 import scrapy
+from scrapy.http import TextResponse
 
 
 class ScreeningInfoSpider(scrapy.Spider):
@@ -17,7 +18,13 @@ class ScreeningInfoSpider(scrapy.Spider):
 
     async def start(self):
         for movie in self.movies:
-            yield scrapy.Request(url=movie["info"]["url"], dont_filter=True, callback=self.parse, cb_kwargs={"movie": movie})
+            if movie["info"]["src"] != "finnkino":
+                yield scrapy.Request(url=movie["info"]["url"], dont_filter=True, callback=self.parse, cb_kwargs={"movie": movie})
+            else:
+                fake = TextResponse(url="about:blank",
+                                    body=b"", encoding="utf-8")
+                for item in self.parse(fake, movie=movie):
+                    yield item
 
     def parse(self, response, movie=None):
         src = movie["info"]["src"]
@@ -28,6 +35,9 @@ class ScreeningInfoSpider(scrapy.Spider):
             if len(dates) > 1 and "Tänään" in dates[0]:
                 date = ["Jatkuvasti"]
             theater = "BioRex Tripla/Redi"
+        elif src == "finnkino":
+            date = movie["info"]["date"]
+            theater = movie["info"]["theater"]
         elif src == "regina":
             date = response.css(
                 "div.title-container span.title::text").getall()

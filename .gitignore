@@ -1,7 +1,6 @@
 __pycache__/
 .scrapy/
 spiders/__pycache__/
-/cinema_scraper/spiders/finnkino_spider.py
 logs/
 *.jsonl
 /src.txt

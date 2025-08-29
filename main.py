@@ -32,6 +32,7 @@ from twisted.internet import reactor, defer  # nopep8
 def crawl():
     yield runner.crawl("kinot")
     yield runner.crawl("biorex")
+    yield runner.crawl("finnkino")
     yield runner.crawl("regina")
     yield runner.crawl("yle")
     yield runner.crawl("letterboxd", user=user)
