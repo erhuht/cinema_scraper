@@ -38,6 +38,8 @@ def populate_html(movies):
 
     section_entries = []
     for section in sections:
+        if len(section["movies"]) == 0:
+            continue
         movie_section_copy = copy.copy(movie_section)
         movie_entries = []
         for movie in section["movies"]:
