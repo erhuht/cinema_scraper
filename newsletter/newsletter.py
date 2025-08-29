@@ -47,8 +47,7 @@ def populate_html(movies):
             movie_copy.find("em").string.replace_with(
                 movie["letterboxd_info"]["director"])
 
-            # Weird, because of different formats
-            dates = ", ".join(movie["date"]).split(", ")
+            dates = movie["date"]
             movie_copy.find("p", attrs={"css-class": "dates"}).string.replace_with(
                 dates[0].title())
             for date in dates[1:]:
