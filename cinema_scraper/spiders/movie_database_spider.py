@@ -72,7 +72,7 @@ class MovieDatabaseSpider(scrapy.Spider):
         return possible_movies
 
     def parse_omdb(self, response, movie={}, possible_movies=[]):
-        if response.json().get("Response") == "True":
+        if response.json().get("Response") == "True" and response.json().get("Director") != "N/A":
             yield {"title": response.json().get("Title"), "og_title": movie["og_title"], "id": response.json().get("imdbID"), "info": movie["info"], "id_src": "omdb"}
         else:
             url = self.generate_imdb_url(movie)
