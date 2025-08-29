@@ -122,7 +122,7 @@ class MoviePolicy:
         elif urlparse_cached(request).netloc in ["www.omdbapi.com", "www.imdb.com"]:
             return True
         else:
-            return urlparse_cached(request).netloc == "letterboxd.com" and "film" in urlparse_cached(request).path
+            return urlparse_cached(request).netloc == "letterboxd.com" and "film/" in urlparse_cached(request).path
 
     def should_cache_response(self, response: Response, request: Request) -> bool:
         if response.status in self.ignore_http_codes:
@@ -130,7 +130,7 @@ class MoviePolicy:
         elif urlparse_cached(request).netloc in ["www.omdbapi.com", "www.imdb.com"]:
             return True
         else:
-            return urlparse_cached(request).netloc == "letterboxd.com" and "film" in urlparse_cached(request).path
+            return urlparse_cached(request).netloc == "letterboxd.com" and "film/" in urlparse_cached(request).path
 
     def is_cached_response_fresh(
         self, cachedresponse: Response, request: Request
