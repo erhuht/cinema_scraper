@@ -19,9 +19,12 @@ class Letterboxd(scrapy.Spider):
             yield scrapy.Request(url=section["url"], callback=self.parse, cb_kwargs={"section": section["name"]})
 
     def parse(self, response, section=""):
-        for movie in response.css("li.poster-container"):
+        movies = response.css("li.griditem")
+        if len(movies) == 0:
+            movies = response.css("li.posteritem")
+        for movie in movies:
             url = "https://letterboxd.com" + \
-                movie.css("div.poster::attr(data-target-link)").get()
+                movie.css("div.react-component::attr(data-target-link)").get()
             yield scrapy.Request(url=url, dont_filter=True, callback=self.parse_movie, cb_kwargs={"section": section})
 
         next_page = response.css("a.next::attr(href)").get()
