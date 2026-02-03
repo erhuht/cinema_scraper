@@ -18,16 +18,23 @@ class Yle(scrapy.Spider):
         response_list = response.json()["data"]
         url = ""
         season = 0
+        # Yle seems to have changed the schedule of these articles, so there may be redundant checks for now
         for article in response_list:
-            if article["headline"] == time.strftime("Teeman kevään %Y elokuvat") and season == 0:
+            if article["headline"] == time.strftime("Teeman alkukevään %Y elokuvat") and season == 0:
                 url = article["url"]["full"]
                 season = 1
-            elif article["headline"] == time.strftime("Teeman kesän %Y elokuvat") and season <= 1:
+            if article["headline"] == time.strftime("Teeman kevään %Y elokuvat") and season <= 1:
                 url = article["url"]["full"]
                 season = 2
-            elif article["headline"] == time.strftime("Teeman syksyn %Y elokuvat") and season <= 2:
+            if article["headline"] == time.strftime("Teeman loppukevään %Y elokuvat") and season <= 2:
                 url = article["url"]["full"]
                 season = 3
+            elif article["headline"] == time.strftime("Teeman kesän %Y elokuvat") and season <= 3:
+                url = article["url"]["full"]
+                season = 4
+            elif article["headline"] == time.strftime("Teeman syksyn %Y elokuvat") and season <= 4:
+                url = article["url"]["full"]
+                season = 5
 
         yield scrapy.Request(url=url, callback=self.parse_article)
 
